@@ -43,12 +43,15 @@ else:
 
 # cursor.execute("DROP TABLE IF EXISTS inventory;")
 # print(cursor.rowcount)
-cursor.execute("CREATE TABLE employee (eid int PRIMARY KEY, name VARCHAR(50), phone varchar(25), admin bool, password varchar(50));")
-print("Finished creating table.")
+# cursor.execute("CREATE TABLE employee (eid int PRIMARY KEY, name VARCHAR(50), phone varchar(25), admin bool, password varchar(50));")
+# print("Finished creating table.")
 
-conn.commit()
-cursor.close()
-conn.close()
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", ("wenzhuo@utexas.edu", "stanley",111111111,0,"qwer"))
+# print("Inserted",cursor.rowcount,"row(s) of data.")
+
+# conn.commit()
+# cursor.close()
+# conn.close()
 
 
 
@@ -56,8 +59,15 @@ conn.close()
 def hello():
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        name = data['username']
-        return redirect('/table/{}'.format(name))
+        name = str(data['username'])
+        print(name)
+        cursor.execute("select admin from employee where name = %s;",(name,))
+        admin = cursor.fetchone()
+        print(admin)
+        if admin[0] == 1:
+            return redirect('/admin/{}'.format(name))
+        else:
+            return redirect('/table/{}'.format(name))
     return render_template("homepage.html")
 
 @app.route('/table/<id>',methods=['GET', 'POST'])
@@ -71,9 +81,16 @@ def showinfo(id):
         if move == 'Redeem Points':
             return redirect("http://www.baidu.com")
     showname = id
+
     return render_template("Employee home.html", showname = showname)
 
 
 @app.route('/redeem/<id>',methods=['GET', 'POST'])
 def redeem(id):
-    return render_template("Redeem.html")   
+    return render_template("Redeem.html")
+
+@app.route('/admin/<id>',methods=['GET', 'POST'])
+def admin_home(id):
+    cursor.execute("select * from employee;")
+    employee = cursor.fetchall()
+    return render_template("Admin home.html",employee = employee)      
