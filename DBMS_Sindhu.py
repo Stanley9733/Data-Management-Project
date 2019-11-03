@@ -62,13 +62,16 @@ def registeruser(username, email, password,phonenumber):
 def main():
 	return render_template('user.html')
 
-@app.route('/index')
-def index():
-	if 'username' in session:
-		 return 'Logged in as ' + username + '<br>' + \
-         "<b><a href = '/logout'>click here to log out</a></b>"
-   	return "You are not logged in <br><a href = '/login'></b>" + \
-      "click here to log in</b></a>"
+# @app.route('/index')
+# def index():
+# 	if 'username' in session:
+# 		 return 'Logged in as ' + username + '<br>' + \
+#          "<b><a href = '/logout'>click here to log out</a></b>"
+#     else:
+#     	return "You are not logged in <br><a href = '/login'></b>" + \
+#       "click here to log in</b></a>"
+
+#     return redirect('/user_portal/{}'.format(username))
 
 
 @app.route('/register')
@@ -115,15 +118,19 @@ def login():
 
 @app.route('/user_portal/<id>', methods = ['GET', 'POST'])
 def user_portal(id):
-	if request.method = 'POST':
-		action =  request.form['submit']
+
+	if 'username' in session:
+		if request.method = 'POST':
+			action =  request.form['submit']
 		if action = 'Check Points':
 			return redirect(url_for('checkpoints'))
 		if action  = 'Redeem Points':
 			return redirect(url_for('redeempoints'))
 		if action = 'Give Points':
 			return redirect(url_for('givepoints'))
-		
+	showname = id
+
+	return render_template("Employee home.html", showname = showname)
 
 
 
