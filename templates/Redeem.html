@@ -1,3 +1,4 @@
+{% block content %} 
 <!DOCTYPE html>
 <html>
 <body>
@@ -10,6 +11,12 @@
 <button onclick="convert()"">Check # of cards can be redeemed</button>
 <p>The number of gift card is: <input type="text" id="numofcards"></p>
 </p>
+{% if invalid %}
+<div class="alert alert-warning">
+        <strong>Warning!</strong> You don't have enough points to redeem.
+</div>
+{% endif %}
+
 <script>  
     function convert() {  
         var points = document.getElementById("numofpoints").value 
@@ -18,3 +25,4 @@
 </script> 
 </body>
 </html>
+{% endblock %}

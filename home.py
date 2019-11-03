@@ -89,17 +89,31 @@ def showinfo(name):
 def redeem(name):
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        points = str(data['numofpoints'])
-        print(points)
+        points = int(data['numofpoints'])
         date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  
-        print(date)
         cursor.execute("select eid from employee where name = %s;",(name,))
         id = cursor.fetchone()
         print(id)
-        # cursor = conn.cursor()
-        cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, 20))
-        conn.commit()
+        cursor.execute("select AvailableRedeemPoints from points where EID = %s;",(id[0],))
+        point_current = cursor.fetchone()
+        print(point_current)
+        if int(point_current[0]) < int(points):
+            return render_template("Redeem.html", invalid = True)
+        else:
+            cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, points/100))
+            cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+            Available = cursor.fetchone()[0]
+            cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(Available-points,id[0],))
+
+            cursor.execute("select Rewards from points where EID= %s;",(id[0],))
+            reward = cursor.fetchone()[0]
+            cursor.execute("UPDATE points SET Rewards = %s where EID = %s;",(reward+points/100,id[0],))
+            conn.commit()
+            return render_template("Redeem.html", invalid = False)
+
     return render_template("Redeem.html")
+
+    
 
 @app.route('/admin/<name>',methods=['GET', 'POST'])
 def admin_home(name):
