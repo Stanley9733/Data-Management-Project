@@ -3,8 +3,11 @@
 <body>
 
 <p>
-<p>Amount of points you want to redeedm: <input type="text" id="numofpoints"></p>
-<button type="submit" onclick="convert()"">Check # of cards can be redeemed</button>
+<form method="POST" class="form1">
+<p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
+<button type="submit">Submit</button></form>
+<br>
+<button onclick="convert()"">Check # of cards can be redeemed</button>
 <p>The number of gift card is: <input type="text" id="numofcards"></p>
 </p>
 <script>  
@@ -13,6 +16,5 @@
         document.getElementById("numofcards").value = points/100
     }  
 </script> 
-<button type="submit">Submit</button>
 </body>
 </html>

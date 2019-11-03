@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import Blueprint, redirect, render_template, request, url_for, jsonify
+from datetime import datetime
 app = Flask(__name__)
 app.debug = True
 
@@ -38,7 +39,7 @@ try:
 except mysql.connector.Error as err:
     print(err)
 else: 
-    cursor = conn.cursor()
+    cursor = conn.cursor(buffered=True)
 
 
 # cursor.execute("DROP TABLE IF EXISTS inventory;")
@@ -63,34 +64,45 @@ def hello():
         print(name)
         cursor.execute("select admin from employee where name = %s;",(name,))
         admin = cursor.fetchone()
-        print(admin)
         if admin[0] == 1:
             return redirect('/admin/{}'.format(name))
         else:
             return redirect('/table/{}'.format(name))
     return render_template("homepage.html")
 
-@app.route('/table/<id>',methods=['GET', 'POST'])
-def showinfo(id):
+@app.route('/table/<name>',methods=['GET', 'POST'])
+def showinfo(name):
     if request.method == 'POST':
         move = request.form['submit']
         if move == 'Check Points':
-            return redirect('/redeem/{}'.format(id))
+            return redirect("http://www.baidu.com")
         if move == 'Give Points':
             return redirect("https://www.youtube.com/")
         if move == 'Redeem Points':
-            return redirect("http://www.baidu.com")
-    showname = id
+            return redirect('/redeem/{}'.format(name))
+    showname = name
 
     return render_template("Employee home.html", showname = showname)
 
 
-@app.route('/redeem/<id>',methods=['GET', 'POST'])
-def redeem(id):
+@app.route('/redeem/<name>',methods=['GET', 'POST'])
+def redeem(name):
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        points = str(data['numofpoints'])
+        print(points)
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  
+        print(date)
+        cursor.execute("select eid from employee where name = %s;",(name,))
+        id = cursor.fetchone()
+        print(id)
+        # cursor = conn.cursor()
+        cursor.execute("insert into redeem(date_Record, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, 20))
+        conn.commit()
     return render_template("Redeem.html")
 
-@app.route('/admin/<id>',methods=['GET', 'POST'])
-def admin_home(id):
+@app.route('/admin/<name>',methods=['GET', 'POST'])
+def admin_home(name):
     cursor.execute("select * from employee;")
     employee = cursor.fetchall()
     return render_template("Admin home.html",employee = employee)      
