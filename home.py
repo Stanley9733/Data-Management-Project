@@ -97,7 +97,7 @@ def redeem(name):
         id = cursor.fetchone()
         print(id)
         # cursor = conn.cursor()
-        cursor.execute("insert into redeem(date_Record, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, 20))
+        cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, 20))
         conn.commit()
     return render_template("Redeem.html")
 
