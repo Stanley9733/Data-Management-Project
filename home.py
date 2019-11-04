@@ -122,6 +122,11 @@ def redeem(name):
 
 @app.route('/admin/<name>',methods=['GET', 'POST'])
 def admin_home(name):
+    reset = False
+    if request.method == 'POST':
+        cursor.execute("TRUNCATE transactions;")
+        reset = True
+
     cursor.execute("select * from employee where admin=0;")
     employee = cursor.fetchall()
-    return render_template("Admin home.html",employee = employee)      
+    return render_template("Admin home.html",employee = employee, reset = reset)

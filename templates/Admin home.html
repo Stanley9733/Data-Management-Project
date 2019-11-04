@@ -1,6 +1,7 @@
 {% block content %}
 <!DOCTYPE html>
 <html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <head>
 <style>
 table {
@@ -42,6 +43,18 @@ tr:nth-child(even) {
   </tbody>
 {% endfor %}
 </table>
+
+<br>
+
+<form method="POST">
+<button class="submit" align="center">I want now to be the end of the month (RESET) </button>
+</form>
+
+{% if reset %}
+<div class="alert alert-success">
+  <strong>Success!</strong> You have reset the system successfully. 
+</div>
+{% endif %}
 
 </body>
 </html>
