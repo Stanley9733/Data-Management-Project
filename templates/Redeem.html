@@ -1,5 +1,6 @@
 {% block content %} 
 <!DOCTYPE html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <html>
 <body>
 
@@ -7,15 +8,18 @@
 <form method="POST" class="form1">
 <p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
 <button type="submit">Submit</button></form>
-<br>
-<button onclick="convert()"">Check # of cards can be redeemed</button>
-<p>The number of gift card is: <input type="text" id="numofcards"></p>
-</p>
 {% if invalid %}
-<div class="alert alert-warning">
+<div class="alert alert-danger">
         <strong>Warning!</strong> You don't have enough points to redeem.
 </div>
 {% endif %}
+<br>
+<button onclick="convert()"">Check # of cards can be redeemed</button>
+<p></p>
+<p>The number of gift card is: <input type="text" id="numofcards"></p>
+</p>
+
+
 
 <script>  
     function convert() {  

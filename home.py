@@ -74,15 +74,20 @@ def hello():
 def showinfo(name):
     if request.method == 'POST':
         move = request.form['submit']
-        if move == 'Check Points':
-            return redirect("http://www.baidu.com")
         if move == 'Give Points':
             return redirect("https://www.youtube.com/")
         if move == 'Redeem Points':
             return redirect('/redeem/{}'.format(name))
-    showname = name
 
-    return render_template("Employee home.html", showname = showname)
+    cursor.execute("select eid from employee where name = %s;",(name,))
+    id = cursor.fetchone()
+    cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+    r_point = cursor.fetchone()[0]
+    print(r_point)
+    cursor.execute("select * from points where EID= %s;",(id[0],))
+    result = cursor.fetchone()
+    showname = name
+    return render_template("Employee home.html", showname = showname,r_point = r_point, result = result)
 
 
 @app.route('/redeem/<name>',methods=['GET', 'POST'])
@@ -93,10 +98,10 @@ def redeem(name):
         date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  
         cursor.execute("select eid from employee where name = %s;",(name,))
         id = cursor.fetchone()
-        print(id)
+        # print(id)
         cursor.execute("select AvailableRedeemPoints from points where EID = %s;",(id[0],))
         point_current = cursor.fetchone()
-        print(point_current)
+        # print(point_current)
         if int(point_current[0]) < int(points):
             return render_template("Redeem.html", invalid = True)
         else:
@@ -117,6 +122,6 @@ def redeem(name):
 
 @app.route('/admin/<name>',methods=['GET', 'POST'])
 def admin_home(name):
-    cursor.execute("select * from employee;")
+    cursor.execute("select * from employee where admin=0;")
     employee = cursor.fetchall()
     return render_template("Admin home.html",employee = employee)      
