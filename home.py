@@ -55,13 +55,11 @@ else:
 # conn.close()
 
 
-
 @app.route('/',methods=['GET', 'POST'])
 def hello():
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
         name = str(data['username'])
-        print(name)
         cursor.execute("select admin from employee where name = %s;",(name,))
         admin = cursor.fetchone()
         if admin[0] == 1:
@@ -83,7 +81,6 @@ def showinfo(name):
     id = cursor.fetchone()
     cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
     r_point = cursor.fetchone()[0]
-    print(r_point)
     cursor.execute("select * from points where EID= %s;",(id[0],))
     result = cursor.fetchone()
     showname = name
@@ -113,6 +110,10 @@ def redeem(name):
             cursor.execute("select Rewards from points where EID= %s;",(id[0],))
             reward = cursor.fetchone()[0]
             cursor.execute("UPDATE points SET Rewards = %s where EID = %s;",(reward+points/100,id[0],))
+
+            cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+            AvailableRedeemPoints = cursor.fetchone()[0]
+            cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(AvailableRedeemPoints-points,id[0],))
             conn.commit()
             return render_template("Redeem.html", invalid = False)
 
