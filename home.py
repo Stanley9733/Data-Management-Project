@@ -123,6 +123,27 @@ def redeem(name):
 
 @app.route('/admin/<name>',methods=['GET', 'POST'])
 def admin_home(name):
+    # report of check employee
+    cursor.execute("select * from points where PointsGiven != 1000;")
+    usernotgiveall = result = cursor.fetchall()
+    print(usernotgiveall)
+
+    # report of all redemptions
+    cursor.execute("select distinct year(RedeemTime) as year, month(RedeemTime) as month from redeem order by year desc, month desc limit 2;")
+    year_month = cursor.fetchall()
+    y1 = [x[0] for x in year_month][0]
+    m1 = [x[1] for x in year_month][0]
+    y2 = [x[0] for x in year_month][1]
+    m2 = [x[1] for x in year_month][1]
+    cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, EID, sum(Pointsused), sum(GiftCard) from redeem where year(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s or month(RedeemTime) = %s  group by year, month,EID;",(y1,y2,m1,m2))
+    result = cursor.fetchall()
+    print(result)
+    
+    # aggregate usage of points
+    cursor.execute("select monthname(Time) as Month,Receiver, sum(Points) as Points_Received from transactions group by Month, Receiver;")
+    usage = cursor.fetchall()
+    print(usage)
+
     reset = False
     if request.method == 'POST':
         cursor.execute("TRUNCATE transactions;")
@@ -130,4 +151,4 @@ def admin_home(name):
 
     cursor.execute("select * from employee where admin=0;")
     employee = cursor.fetchall()
-    return render_template("Admin home.html",employee = employee, reset = reset)
+    return render_template("Admin home.html",employee = employee, reset = reset, result = result,usernotgiveall=usernotgiveall,usage=usage)

@@ -23,7 +23,7 @@ tr:nth-child(even) {
 </head>
 <body>
 
-<h2>Reward Tracking Table</h2>
+<h2>Employee Info Sheet</h2>
 
 <table>
   <thead>
@@ -55,6 +55,40 @@ tr:nth-child(even) {
   <strong>Success!</strong> You have reset the system successfully. 
 </div>
 {% endif %}
+
+<hr>
+<h2>All redemptions for the previous two months</h2>
+<table>
+  <thead>
+    <th>Year</th>
+    <th>Month</th>
+    <th>Employee ID</th>
+    <th>Number of points redeedmed</th>
+    <th>Number of giftcard received</th>
+  </thead>
+  {% for result in result %}
+  <tbody>
+  <tr>
+    <td>{{result[0]}}</td>
+    <td>{{result[1]}}</td>
+    <td>{{result[2]}}</td>
+    <td>{{result[3]}}</td>
+    <td>{{result[4]}}</td>
+  </tr>
+  </tbody>
+{% endfor %}
+</table>
+<hr>
+<h2>Employee who didn't giving out all of their points for the current recent month </h2>
+{% for usernotgiveall in usernotgiveall %}
+<p>{{usernotgiveall[1]}} only used {{usernotgiveall[3]}} points</p>
+{% endfor %}
+
+<hr>
+<h2>Monthly aggregate usage of points </h2>
+{% for usage in usage %}
+<p>{{usage[1]}} received {{usage[2]}} points in {{usage[0]}}</p>
+{% endfor %}
 
 </body>
 </html>
