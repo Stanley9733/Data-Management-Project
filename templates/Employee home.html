@@ -24,16 +24,16 @@ tr:nth-child(even) {
 </head>
 <body>
 <h2>Welcome, {{showname}}</h2>
-<h4>You current have {{r_point}} points in {{result[0]}}</h4>
-{% if result[3]>0 %}
-<h4>You gave {{result[3]}} points in {{result[0]}} </h4>
-{% else %}
-<h4>You haven't give any points in {{result[0]}} </h4>
-{% endif %}
+<h4>You current have {{result[3]}} points this month</h4>
 {% if result[4]>0 %}
-<h4>You received {{result[4]}} points in {{result[0]}} </h4>
+<h4>You gave {{result[4]}} points this month </h4>
 {% else %}
-<h4>You haven't receive any points in {{result[0]}} </h4>
+<h4>You haven't give any points in this month </h4>
+{% endif %}
+{% if result[5]>0 %}
+<h4>You received {{result[5]}} points this month </h4>
+{% else %}
+<h4>You haven't receive any points in this month </h4>
 {% endif %}
 
 

@@ -10,7 +10,7 @@
 <button type="submit">Submit</button></form>
 {% if invalid %}
 <div class="alert alert-danger">
-        <strong>Warning!</strong> You don't have enough points to redeem.
+        <strong>Warning!</strong> You don't have enough points to redeem. You only have {{point_current[0]}} points that can be cashed in.
 </div>
 {% endif %}
 <br>

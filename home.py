@@ -79,12 +79,13 @@ def showinfo(name):
 
     cursor.execute("select eid from employee where name = %s;",(name,))
     id = cursor.fetchone()
-    cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
-    r_point = cursor.fetchone()[0]
+    # cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+    # r_point = cursor.fetchone()[0]
     cursor.execute("select * from points where EID= %s;",(id[0],))
     result = cursor.fetchone()
+    print(result)
     showname = name
-    return render_template("Employee home.html", showname = showname,r_point = r_point, result = result)
+    return render_template("Employee home.html", showname = showname, result = result)
 
 
 @app.route('/redeem/<name>',methods=['GET', 'POST'])
@@ -100,7 +101,7 @@ def redeem(name):
         point_current = cursor.fetchone()
         # print(point_current)
         if int(point_current[0]) < int(points):
-            return render_template("Redeem.html", invalid = True)
+            return render_template("Redeem.html", invalid = True,point_current=point_current)
         else:
             cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, points/100))
             cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
@@ -111,9 +112,9 @@ def redeem(name):
             reward = cursor.fetchone()[0]
             cursor.execute("UPDATE points SET Rewards = %s where EID = %s;",(reward+points/100,id[0],))
 
-            cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
-            AvailableRedeemPoints = cursor.fetchone()[0]
-            cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(AvailableRedeemPoints-points,id[0],))
+            # cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+            # AvailableRedeemPoints = cursor.fetchone()[0]
+            # cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(AvailableRedeemPoints-points,id[0],))
             conn.commit()
             return render_template("Redeem.html", invalid = False)
 
@@ -124,9 +125,15 @@ def redeem(name):
 @app.route('/admin/<name>',methods=['GET', 'POST'])
 def admin_home(name):
     # report of check employee
-    cursor.execute("select * from points where PointsGiven != 1000;")
-    usernotgiveall = result = cursor.fetchall()
+    cursor.callproc("not_give_all;")
+    for result in cursor.stored_results():
+            usernotgiveall = result.fetchall()
     print(usernotgiveall)
+
+    # aggregate usage of points
+    cursor.callproc("get_usage;")
+    for result in cursor.stored_results():
+            usage = result.fetchall()
 
     # report of all redemptions
     cursor.execute("select distinct year(RedeemTime) as year, month(RedeemTime) as month from redeem order by year desc, month desc limit 2;")
@@ -139,16 +146,22 @@ def admin_home(name):
     result = cursor.fetchall()
     print(result)
     
-    # aggregate usage of points
-    cursor.execute("select monthname(Time) as Month,Receiver, sum(Points) as Points_Received from transactions group by Month, Receiver;")
-    usage = cursor.fetchall()
-    print(usage)
+
 
     reset = False
     if request.method == 'POST':
-        cursor.execute("TRUNCATE transactions;")
+        # cursor.execute("update points set AvaliableGivePoints = 1000;")
+        cursor.execute("select eid from employee;")
+        employee = cursor.fetchall()
+        for e in [x[0] for x in employee]:
+            cursor.execute("select * from points where eid=%s order by Months desc",(e,))
+            record = cursor.fetchall()
+            # print(record[5])
+            cursor.execute("insert into points values (DATE_ADD(%s, INTERVAL 1 MONTH), %s, %s, %s, %s, %s, %s);",(record[0][0],record[0][1],record[0][2],1000,record[0][4],record[0][5],record[0][6],))
+            # cursor.execute("insert into points values (DATE_ADD(%s, INTERVAL 1 MONTH), %s, %s, %s, %s, %s, %s);",("2019-10-01",1,2,3,4,5,6,))
+            conn.commit()
         reset = True
 
     cursor.execute("select * from employee where admin=0;")
     employee = cursor.fetchall()
-    return render_template("Admin home.html",employee = employee, reset = reset, result = result,usernotgiveall=usernotgiveall,usage=usage)
+    return render_template("Admin home.html",employee = employee, reset = reset, result = result, usernotgiveall=usernotgiveall,usage=usage)
