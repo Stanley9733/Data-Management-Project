@@ -12,6 +12,9 @@
       <input id="username" name="username" type="text" align="center" placeholder="Username">
       <input id="password" type="password" align="center" placeholder="Password">
       <button class="submit" align="center">Sign in</button>
+      {% for message in get_flashed_messages() %}
+      <br><div class="flash">{{ message }}</div>
+      {% endfor %}
       <p class="forgot" align="center"><a href="">Forgot Password?</p>
     </div>
 </body>

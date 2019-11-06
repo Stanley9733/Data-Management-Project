@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import Blueprint, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, redirect, render_template, request, url_for, jsonify,flash
 from datetime import datetime
 app = Flask(__name__)
 app.debug = True
@@ -7,6 +7,8 @@ app.debug = True
 
 import mysql.connector
 from mysql.connector import errorcode
+
+app.secret_key = b'\x11\xae\xba\x13\xca-\xa8X\x84l\xf3\xd3\xa3x\xed\x10'
 
 # Obtain connection string information from the portal
 # config = {
@@ -61,11 +63,15 @@ def hello():
         data = request.form.to_dict(flat=True)
         name = str(data['username'])
         cursor.execute("select admin from employee where name = %s;",(name,))
-        admin = cursor.fetchone()
-        if admin[0] == 1:
-            return redirect('/admin/{}'.format(name))
-        else:
-            return redirect('/table/{}'.format(name))
+        admin = cursor.fetchall()
+        print(admin)
+        if len(admin)==0:
+            flash("You are not in the database")
+        else:      
+            if admin[0][0] == 1:
+                return redirect('/admin/{}'.format(name))
+            else:
+                return redirect('/table/{}'.format(name))
     return render_template("homepage.html")
 
 @app.route('/table/<name>',methods=['GET', 'POST'])
