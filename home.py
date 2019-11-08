@@ -85,13 +85,14 @@ def showinfo(name):
 
     cursor.execute("select eid from employee where name = %s;",(name,))
     id = cursor.fetchone()
-    # cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
-    # r_point = cursor.fetchone()[0]
     cursor.execute("select * from points where EID= %s;",(id[0],))
     result = cursor.fetchone()
-    print(result)
     showname = name
-    return render_template("Employee home.html", showname = showname, result = result)
+    cursor.execute("select time, name, points, message from transactions join employee on EID = Receiver where Sender= %s;",(id[0],))
+    send = cursor.fetchall()
+    cursor.execute("select time, name, points, message from transactions join employee on EID = Sender where Receiver= %s;",(id[0],))
+    receive = cursor.fetchall()
+    return render_template("Employee home.html", showname = showname, result = result,send = send, receive = receive)
 
 
 @app.route('/redeem/<name>',methods=['GET', 'POST'])
@@ -148,7 +149,8 @@ def admin_home(name):
     m1 = [x[1] for x in year_month][0]
     y2 = [x[0] for x in year_month][1]
     m2 = [x[1] for x in year_month][1]
-    cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, EID, sum(Pointsused), sum(GiftCard) from redeem where year(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s or month(RedeemTime) = %s  group by year, month,EID;",(y1,y2,m1,m2))
+    cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, name, sum(Pointsused), sum(GiftCard) from redeem join employee on employee.eid = redeem.eid where year(RedeemTime) = %s and month(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s  group by year, month, name;",(y1,m1,y2,m2))
+    # cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, EID, sum(Pointsused), sum(GiftCard) from redeem where year(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s or month(RedeemTime) = %s  group by year, month,EID;",(y1,y2,m1,m2))
     result = cursor.fetchall()
     print(result)
     

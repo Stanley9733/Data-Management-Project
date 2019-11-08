@@ -8,10 +8,15 @@
 <form method="POST" class="form1">
 <p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
 <button type="submit">Submit</button></form>
+<br>
 {% if invalid %}
 <div class="alert alert-danger">
         <strong>Warning!</strong> You don't have enough points to redeem. You only have {{point_current[0]}} points that can be cashed in.
 </div>
+{% elif invalid == False %}
+<div class="alert alert-success">
+    <strong>Success!</strong> You have successfully redeemed.
+  </div>
 {% endif %}
 <br>
 <button onclick="convert()"">Check # of cards can be redeemed</button>

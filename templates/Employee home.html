@@ -36,11 +36,51 @@ tr:nth-child(even) {
 <h4>You haven't receive any points in this month </h4>
 {% endif %}
 
-
 <form method="POST">
 <input type="submit" name = "submit" value = "Give Points">
 <input type="submit" name = "submit" value = "Redeem Points">
 </form>
+
+<H2>Complete History of Points Received</H2>
+<table>
+  <thead>
+    <th>Time</th>
+    <th>Received from</th>
+    <th>Points</th>
+    <th>Message</th>
+  </thead>
+  {% for r in receive %}
+  <tbody>
+  <tr>
+    <td>{{r[0]}}</td>
+    <td>{{r[1]}}</td>
+    <td>{{r[2]}}</td>
+    <td>{{r[3]}}</td>
+  </tr>
+  </tbody>
+{% endfor %}
+</table>
+
+<H2>Complete History of Points Given</H2>
+<table>
+  <thead>
+    <th>Time</th>
+    <th>Sent to</th>
+    <th>Points</th>
+    <th>Message</th>
+  </thead>
+  {% for s in send %}
+  <tbody>
+  <tr>
+    <td>{{s[0]}}</td>
+    <td>{{s[1]}}</td>
+    <td>{{s[2]}}</td>
+    <td>{{s[3]}}</td>
+  </tr>
+  </tbody>
+{% endfor %}
+</table>
+
 
 </body>
 </html>
