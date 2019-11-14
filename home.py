@@ -55,7 +55,7 @@ else:
 # cursor.close()
 # conn.close()
 
-# cursor.execute("update employee set password = %s where eid = 0;",(generate_password_hash("sindhu"),))
+# cursor.execute("update employee set password = %s where eid = 2;",(generate_password_hash("ryan"),))
 # conn.commit()
 
 @app.route('/',methods=['GET', 'POST'])
@@ -67,7 +67,6 @@ def hello():
             data = request.form.to_dict(flat=True)
             name = str(data['username'])
             password = str(data['password'])
-            session['username'] = str(data['username'])
             cursor.execute("select * from employee where name = %s;",(name,))
             user = cursor.fetchall()
             # print(user)
@@ -83,6 +82,7 @@ def hello():
                 #     if user[0][4] == 1:
                 #         return redirect(url_for('admin_home'))
                 else:
+                    session['username'] = name
                     return redirect(url_for('showinfo'))
 
     return render_template("homepage.html")
@@ -97,7 +97,6 @@ def admin_login():
             data = request.form.to_dict(flat=True)
             name = str(data['admin'])
             password = str(data['password'])
-            session['admin'] = str(data['admin'])
             cursor.execute("select * from employee where name = %s;",(name,))
             user = cursor.fetchall()
             if len(user)==0:
@@ -107,6 +106,7 @@ def admin_login():
                     flash("Incorrect Password")
                 else:
                     if user[0][3] == 1:
+                        session['admin'] = str(data['admin'])
                         return redirect(url_for('admin_home'))
                     else:
                         flash("You are not an admin")
@@ -128,9 +128,9 @@ def showinfo():
         cursor.execute("select * from points where EID= %s and months = (select max(months) from points);",(id[0],))
         result = cursor.fetchone()
         showname = session['username']
-        cursor.execute("select time, name, points, message from transactions join employee on EID = Receiver where Sender= %s;",(id[0],))
+        cursor.execute("select time, name, points, message from transactions join employee on EID = Receiver where Sender= %s order by time desc;",(id[0],))
         send = cursor.fetchall()
-        cursor.execute("select time, name, points, message from transactions join employee on EID = Sender where Receiver= %s;",(id[0],))
+        cursor.execute("select time, name, points, message from transactions join employee on EID = Sender where Receiver= %s order by time desc;",(id[0],))
         receive = cursor.fetchall()
         return render_template("Employee home.html", showname = showname, result = result,send = send, receive = receive)
     else:
@@ -204,9 +204,9 @@ def send():
                 cursor.execute("update points set PointsGiven = %s where EID = %s and Months = %s;",(s[1]+points,sender,month,))
                 conn.commit()
 
-                return render_template("givepoints.html", e = employee, invalid = False, s = s, p = points, name = receiver_name)
+                return render_template("givepoints.html", e = employee, invalid = False, p = points, name = receiver_name)
             else:
-                return render_template("givepoints.html", e = employee, invalid = True)
+                return render_template("givepoints.html", e = employee, invalid = True, s = s)
         return render_template("givepoints.html",e = employee)
     else:
         return redirect(url_for('hello'))
@@ -263,3 +263,6 @@ def admin_home():
 def logout():
     session.clear()
     return redirect(url_for('hello'))
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
