@@ -10,8 +10,8 @@
     <p class="sign" align="center">Welcome to McCombs MSITM Rewarding system</p>
     <form method="POST" class="form1">
       <input id="username" name="username" type="text" align="center" placeholder="Username">
-      <input id="password" type="password" align="center" placeholder="Password">
-      <button class="submit" align="center">Sign in</button>
+      <input name="password" type="password" align="center" placeholder="Password">
+      <button class="submit" align="center">Sign in</button></form>
       {% for message in get_flashed_messages() %}
       <br><div class="flash">{{ message }}</div>
       {% endfor %}

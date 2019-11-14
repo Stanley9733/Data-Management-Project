@@ -1,9 +1,9 @@
 from flask import Flask
-from flask import Blueprint, redirect, render_template, request, url_for, jsonify,flash
+from flask import Blueprint, redirect, session, render_template, request, url_for, jsonify,flash
+from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 app = Flask(__name__)
 app.debug = True
-
 
 import mysql.connector
 from mysql.connector import errorcode
@@ -49,9 +49,8 @@ else:
 # cursor.execute("CREATE TABLE employee (eid int PRIMARY KEY, name VARCHAR(50), phone varchar(25), admin bool, password varchar(50));")
 # print("Finished creating table.")
 
-# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", ("wenzhuo@utexas.edu", "stanley",111111111,0,"qwer"))
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (3, "zhuo",111111111,0,generate_password_hash("hello")))
 # print("Inserted",cursor.rowcount,"row(s) of data.")
-
 # conn.commit()
 # cursor.close()
 # conn.close()
@@ -62,16 +61,24 @@ def hello():
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
         name = str(data['username'])
-        cursor.execute("select admin from employee where name = %s;",(name,))
-        admin = cursor.fetchall()
-        print(admin)
-        if len(admin)==0:
+        password = str(data['password'])
+        session['username'] = str(data['username'])
+        cursor.execute("select * from employee where name = %s;",(name,))
+        user = cursor.fetchall()
+        # print(user)
+        # print(password)
+        # print(generate_password_hash("hello"))
+        # print(user[0][4])
+        if len(user)==0:
             flash("You are not in the database")
-        else:      
-            if admin[0][0] == 1:
-                return redirect('/admin/{}'.format(name))
+        else:
+            if check_password_hash(user[0][4], password) != True:
+                flash("Incorrect Password")
             else:
-                return redirect('/table/{}'.format(name))
+                if user[0][4] == 1:
+                    return redirect('/admin/{}'.format(name))
+                else:
+                    return redirect('/table/{}'.format(name))
     return render_template("homepage.html")
 
 @app.route('/table/<name>',methods=['GET', 'POST'])
@@ -79,13 +86,13 @@ def showinfo(name):
     if request.method == 'POST':
         move = request.form['submit']
         if move == 'Give Points':
-            return redirect("https://www.youtube.com/")
+            return redirect('/send/{}'.format(name))
         if move == 'Redeem Points':
             return redirect('/redeem/{}'.format(name))
 
     cursor.execute("select eid from employee where name = %s;",(name,))
     id = cursor.fetchone()
-    cursor.execute("select * from points where EID= %s;",(id[0],))
+    cursor.execute("select * from points where EID= %s and months = (select max(months) from points);",(id[0],))
     result = cursor.fetchone()
     showname = name
     cursor.execute("select time, name, points, message from transactions join employee on EID = Receiver where Sender= %s;",(id[0],))
@@ -104,28 +111,63 @@ def redeem(name):
         cursor.execute("select eid from employee where name = %s;",(name,))
         id = cursor.fetchone()
         # print(id)
-        cursor.execute("select AvailableRedeemPoints from points where EID = %s;",(id[0],))
+        cursor.execute("select AvailableRedeemPoints from points where EID = %s and months = (select max(months) from points);",(id[0],))
         point_current = cursor.fetchone()
         # print(point_current)
         if int(point_current[0]) < int(points):
-            return render_template("Redeem.html", invalid = True,point_current=point_current)
+            return render_template("Redeem.html", invalid = True,point_current=point_current,showname = name)
         else:
             cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, points/100))
-            cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
+            cursor.execute("select AvailableRedeemPoints from points where EID= %s and months = (select max(months) from points);",(id[0],))
             Available = cursor.fetchone()[0]
-            cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(Available-points,id[0],))
+            cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s and months = (select max(months) from transactions);",(Available-points,id[0],))
 
-            cursor.execute("select Rewards from points where EID= %s;",(id[0],))
+            cursor.execute("select Rewards from points where EID= %s and months = (select max(months) from points);",(id[0],))
             reward = cursor.fetchone()[0]
-            cursor.execute("UPDATE points SET Rewards = %s where EID = %s;",(reward+points/100,id[0],))
+            cursor.execute("UPDATE points SET Rewards = %s where EID = %s and months = (select max(months) from transactions);",(reward+points/100,id[0],))
 
-            # cursor.execute("select AvailableRedeemPoints from points where EID= %s;",(id[0],))
-            # AvailableRedeemPoints = cursor.fetchone()[0]
-            # cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s;",(AvailableRedeemPoints-points,id[0],))
             conn.commit()
-            return render_template("Redeem.html", invalid = False)
+            return render_template("Redeem.html", invalid = False,showname = name)
 
-    return render_template("Redeem.html")
+    return render_template("Redeem.html",showname = name)
+
+
+
+@app.route('/send/<name>',methods=['GET', 'POST'])
+def send(name):
+    cursor.execute("select name from employee where admin = 0 and name != %s;",(name,))
+    employee = cursor.fetchall()
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        points = int(data['numofpoint'])
+        message = data['message']
+        receiver_name = request.form.get("Employee")
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        month = datetime.today().date().replace(day=1)
+        # print(month)  
+        cursor.execute("select eid from employee where name = %s;",(name,))
+        sender = cursor.fetchone()[0]
+        cursor.execute("select eid from employee where name = %s;",(request.form.get("Employee"),))
+        receiver = cursor.fetchone()[0]
+        cursor.execute("select AvaliableGivePoints, PointsGiven from points where EID = %s and Months = %s;",(sender,month,))
+        s = cursor.fetchone()
+        if s[0] > points:
+            cursor.execute("insert into transactions(Time,Sender,Receiver,Points,Message) values(%s,%s,%s,%s,%s);",(date,sender,receiver,points,message,))
+            conn.commit()
+            cursor.execute("select AvailableRedeemPoints, PointsReceived from points where EID = %s and Months = %s;",(receiver,month,))
+            r = cursor.fetchone()
+            # print(r)
+            cursor.execute("update points set AvailableRedeemPoints = %s where EID = %s and Months = %s;",(r[0]+points,receiver,month,))
+            cursor.execute("update points set PointsReceived = %s where EID = %s and Months = %s;",(r[1]+points,receiver,month,))
+
+            cursor.execute("update points set AvaliableGivePoints = %s where EID = %s and Months = %s;",(s[0]-points,sender,month,))
+            cursor.execute("update points set PointsGiven = %s where EID = %s and Months = %s;",(s[1]+points,sender,month,))
+            conn.commit()
+
+            return render_template("givepoints.html", e = employee, invalid = False, s = s, p = points, name = receiver_name,showname = name)
+        else:
+            return render_template("givepoints.html", e = employee, invalid = True,showname = name)
+    return render_template("givepoints.html",e = employee,showname = name)
 
     
 
@@ -135,7 +177,7 @@ def admin_home(name):
     cursor.callproc("not_give_all;")
     for result in cursor.stored_results():
             usernotgiveall = result.fetchall()
-    print(usernotgiveall)
+    # print(usernotgiveall)
 
     # aggregate usage of points
     cursor.callproc("get_usage;")
@@ -152,10 +194,8 @@ def admin_home(name):
     cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, name, sum(Pointsused), sum(GiftCard) from redeem join employee on employee.eid = redeem.eid where year(RedeemTime) = %s and month(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s  group by year, month, name;",(y1,m1,y2,m2))
     # cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, EID, sum(Pointsused), sum(GiftCard) from redeem where year(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s or month(RedeemTime) = %s  group by year, month,EID;",(y1,y2,m1,m2))
     result = cursor.fetchall()
-    print(result)
+    # print(result)
     
-
-
     reset = False
     if request.method == 'POST':
         # cursor.execute("update points set AvaliableGivePoints = 1000;")

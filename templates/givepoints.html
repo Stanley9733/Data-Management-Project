@@ -17,23 +17,27 @@
 
 <p>
 <form method="POST" class="form1">
-<p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
+    <select id="Employee" name="Employee" required>
+    <option value="" selected disabled hidden>Choose Employee here</option>
+    {% for i in e%}
+        <option value="{{i[0]}}">{{i[0]}}</option>
+    {% endfor %}
+    </select>
+
+<p>Amount of points you want to send: <input type="text" id="numofpoint" name="numofpoint" required></p>
+<p>Message: <input type="text" id="message" name="message" required></p>
 <button type="submit">Submit</button></form>
 <br>
 {% if invalid %}
 <div class="alert alert-danger">
-        <strong>Warning!</strong> You don't have enough points to redeem. You only have {{point_current[0]}} points that can be cashed in.
+        <strong>Warning!</strong> You don't have enough points to send. You only have {{s[0]}} points that can be sent.
 </div>
 {% elif invalid == False %}
 <div class="alert alert-success">
-    <strong>Success!</strong> You have successfully redeemed.
+    <strong>Success!</strong> You have successfully sent {{p}} points to {{name}}.
   </div>
 {% endif %}
-<br>
-<button onclick="convert()"">Check # of cards can be redeemed</button>
-<p></p>
-<p>The number of gift card is: <input type="text" id="numofcards"></p>
-</p>
+
 <br>
 
 
