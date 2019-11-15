@@ -86,7 +86,7 @@ def hello():
             # print(generate_password_hash("hello"))
             # print(user[0][4])
             if len(user)==0:
-                flash("You are not in the database")
+                flash("Employee Doesn't Exist, Please Check Username")
             else:
                 if check_password_hash(user[0][4], password) != True:
                     flash("Incorrect Password")
