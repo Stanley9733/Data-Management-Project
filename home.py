@@ -67,6 +67,18 @@ def hello():
             data = request.form.to_dict(flat=True)
             name = str(data['username'])
             password = str(data['password'])
+
+            try:
+                conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+            except mysql.connector.Error as err:
+                print(err)
+            else: 
+                cursor = conn.cursor(buffered=True)
+
             cursor.execute("select * from employee where name = %s;",(name,))
             user = cursor.fetchall()
             # print(user)
@@ -97,6 +109,18 @@ def admin_login():
             data = request.form.to_dict(flat=True)
             name = str(data['admin'])
             password = str(data['password'])
+
+            try:
+                conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+            except mysql.connector.Error as err:
+                print(err)
+            else: 
+                cursor = conn.cursor(buffered=True)
+
             cursor.execute("select * from employee where name = %s;",(name,))
             user = cursor.fetchall()
             if len(user)==0:
@@ -123,6 +147,17 @@ def showinfo():
             if move == 'Redeem Points':
                 return redirect('/redeem/')
 
+        try:
+            conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+        except mysql.connector.Error as err:
+            print(err)
+        else: 
+            cursor = conn.cursor(buffered=True)
+
         cursor.execute("select eid from employee where name = %s;",(session['username'],))
         id = cursor.fetchone()
         cursor.execute("select * from points where EID= %s and months = (select max(months) from points);",(id[0],))
@@ -141,6 +176,17 @@ def showinfo():
 @app.route('/redeem/',methods=['GET', 'POST'])
 def redeem():
     if 'username' in session:
+        try:
+            conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+        except mysql.connector.Error as err:
+            print(err)
+        else: 
+            cursor = conn.cursor(buffered=True)
+
         if request.method == 'POST':
             data = request.form.to_dict(flat=True)
             points = int(data['numofpoints'])
@@ -175,6 +221,17 @@ def redeem():
 @app.route('/send/',methods=['GET', 'POST'])
 def send():
     if 'username' in session:
+        try:
+            conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+        except mysql.connector.Error as err:
+            print(err)
+        else: 
+            cursor = conn.cursor(buffered=True)
+
         cursor.execute("select name from employee where admin = 0 and name != %s;",(session['username'],))
         employee = cursor.fetchall()
         if request.method == 'POST':
@@ -215,6 +272,17 @@ def send():
 
 @app.route('/admin/',methods=['GET', 'POST'])
 def admin_home():
+    try:
+        conn = mysql.connector.connect(user='SS2020@msitmdbms',
+                                        password='SSdbms@2020',
+                                        database='dbms2020',
+                                        host='msitmdbms.mysql.database.azure.com',
+                                        ssl_ca='BaltimoreCyberTrustRoot.crt.pem')
+    except mysql.connector.Error as err:
+        print(err)
+    else: 
+        cursor = conn.cursor(buffered=True)
+
     if 'admin' in session:
         # report of check employee
         cursor.callproc("not_give_all;")
@@ -263,6 +331,11 @@ def admin_home():
 def logout():
     session.clear()
     return redirect(url_for('hello'))
+
+# @app.route('/ad/logout')
+# def adlogout():
+#     session.clear()
+#     return redirect(url_for('admin_home'))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
