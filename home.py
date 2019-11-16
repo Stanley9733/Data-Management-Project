@@ -60,7 +60,7 @@ else:
 # conn.commit()
 
 
-# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (4, "whishire",8924848102,0,generate_password_hash("wilshire")))
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (4, "wilshire",8924848102,0,generate_password_hash("wilshire")))
 # cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (5, "jaylen",6728391043,0,generate_password_hash("jaylen")))
 # print("Inserted",cursor.rowcount,"row(s) of data.")
 # conn.commit()
