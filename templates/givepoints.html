@@ -12,6 +12,7 @@
     }
 </style>
 <body>
+<center>
 <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -26,22 +27,27 @@
 
 <p>
 <form method="POST" class="form1">
+    <p>Whom you want to send points to?
     <select id="Employee" name="Employee" required>
-    <option value="" selected disabled hidden>Choose Employee here</option>
+    <option value="" selected disabled hidden>Choose Employee here</option> </p>
     {% for i in e%}
         <option value="{{i[0]}}">{{i[0]}}</option>
     {% endfor %}
     </select>
 
-<p>Amount of points you want to send: <input type="text" id="numofpoint" name="numofpoint" required></p>
-<p>Message: <input type="text" id="message" name="message" required></p>
+<p>Number of points you want to send: <input type="text" id="numofpoint" name="numofpoint" required></p>
+<p>Any message for him/her: <input type="text" id="message" name="message" required></p>
 <button type="submit">Submit</button></form>
 <br>
-{% if invalid %}
+{% if invalid == 1 %}
+<div class="alert alert-danger">
+        <strong>Warning!</strong> Number of points should be a postive number, check your input.
+</div>
+{% elif invalid == 3 %}
 <div class="alert alert-danger">
         <strong>Warning!</strong> You don't have enough points to send. You only have {{s[0]}} points that can be sent.
 </div>
-{% elif invalid == False %}
+{% elif invalid == 2 %}
 <div class="alert alert-success">
     <strong>Success!</strong> You have successfully sent {{p}} points to {{name}}.
   </div>
@@ -59,3 +65,4 @@
 </body>
 </html>
 {% endblock %}
+</center>

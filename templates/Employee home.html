@@ -9,7 +9,7 @@
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
-  width: 100%;
+  width: 80%;
 }
 
 body {
@@ -33,6 +33,7 @@ tr:nth-child(even) {
 
 
 </head>
+<center>
 <body>
     <nav class="navbar navbar-default">
         <div class="container-fluid">
@@ -47,7 +48,7 @@ tr:nth-child(even) {
       </nav>
 
 <h2>Welcome, {{showname}}</h2>
-<h4>You current have {{result[2]}} points this month to redeem</h4>
+<h4>You current have {{result[2]}} points to redeem</h4>
 <h4>You current have {{result[3]}} points this month to give</h4>
 {% if result[4]>0 %}
 <h4>You gave {{result[4]}} points this month </h4>
@@ -105,7 +106,7 @@ tr:nth-child(even) {
 {% endfor %}
 </table>
 
-
 </body>
+</center>
 </html>
 {% endblock %}

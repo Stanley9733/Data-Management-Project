@@ -50,7 +50,7 @@ else:
 # cursor.execute("CREATE TABLE employee (eid int PRIMARY KEY, name VARCHAR(50), phone varchar(25), admin bool, password varchar(50));")
 # print("Finished creating table.")
 
-# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (3, "zhuo",111111111,0,generate_password_hash("hello")))
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (3, "zhuo",5167290363,0,generate_password_hash("hello")))
 # print("Inserted",cursor.rowcount,"row(s) of data.")
 # conn.commit()
 # cursor.close()
@@ -58,6 +58,14 @@ else:
 
 # cursor.execute("update employee set password = %s where eid = 2;",(generate_password_hash("ryan"),))
 # conn.commit()
+
+
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (4, "whishire",8924848102,0,generate_password_hash("wilshire")))
+# cursor.execute("INSERT INTO employee (eid, name, phone, admin, password) VALUES (%s,%s,%s,%s,%s);", (5, "jaylen",6728391043,0,generate_password_hash("jaylen")))
+# print("Inserted",cursor.rowcount,"row(s) of data.")
+# conn.commit()
+
+
 
 @app.route('/',methods=['GET', 'POST'])
 def hello():
@@ -197,7 +205,7 @@ def redeem():
             id = cursor.fetchone()
             cursor.execute("select AvailableRedeemPoints from points where EID = %s and months = (select max(months) from points);",(id[0],))
             point_current = cursor.fetchone()
-            if cards == 0:
+            if cards <= 0:
                 return render_template("Redeem.html", invalid = 1,point_current=point_current,showname = session['username'])
             elif int(point_current[0]) < cards*10000:
                 return render_template("Redeem.html", invalid = 2,point_current=point_current,showname = session['username'])
@@ -249,7 +257,9 @@ def send():
             receiver = cursor.fetchone()[0]
             cursor.execute("select AvaliableGivePoints, PointsGiven from points where EID = %s and Months = %s;",(sender,month,))
             s = cursor.fetchone()
-            if s[0] > points:
+            if points <= 0:
+                return render_template("Givepoints.html", e = employee,invalid = 1)
+            elif s[0] > points:
                 cursor.execute("insert into transactions(Time,Sender,Receiver,Points,Message) values(%s,%s,%s,%s,%s);",(date,sender,receiver,points,message,))
                 conn.commit()
                 cursor.execute("select AvailableRedeemPoints, PointsReceived from points where EID = %s and Months = %s;",(receiver,month,))
@@ -262,10 +272,10 @@ def send():
                 cursor.execute("update points set PointsGiven = %s where EID = %s and Months = %s;",(s[1]+points,sender,month,))
                 conn.commit()
 
-                return render_template("givepoints.html", e = employee, invalid = False, p = points, name = receiver_name)
+                return render_template("Givepoints.html", e = employee, invalid = 2, p = points, name = receiver_name)
             else:
-                return render_template("givepoints.html", e = employee, invalid = True, s = s)
-        return render_template("givepoints.html",e = employee)
+                return render_template("Givepoints.html", e = employee, invalid = 3, s = s)
+        return render_template("Givepoints.html",e = employee)
     else:
         return redirect(url_for('hello'))
 
@@ -289,7 +299,7 @@ def admin_home():
         cursor.callproc("not_give_all;")
         for result in cursor.stored_results():
                 usernotgiveall = result.fetchall()
-        # print(usernotgiveall)
+
 
         # aggregate usage of points
         cursor.callproc("get_usage;")
@@ -315,14 +325,34 @@ def admin_home():
             for e in [x[0] for x in employee]:
                 cursor.execute("select * from points where eid=%s order by Months desc",(e,))
                 record = cursor.fetchall()
+                # print(record)
                 # print(record[5])
-                cursor.execute("insert into points values (DATE_ADD(%s, INTERVAL 1 MONTH), %s, %s, %s, %s, %s, %s);",(record[0][0],record[0][1],record[0][2],1000,record[0][4],record[0][5],record[0][6],))
+                cursor.execute("insert into points values (DATE_ADD(%s, INTERVAL 1 MONTH), %s, %s, %s, %s, %s, %s);",(record[0][0],record[0][1],record[0][2],1000,0,0,record[0][6],))
                 # cursor.execute("insert into points values (DATE_ADD(%s, INTERVAL 1 MONTH), %s, %s, %s, %s, %s, %s);",("2019-10-01",1,2,3,4,5,6,))
                 conn.commit()
             reset = True
+            
 
         cursor.execute("select * from employee where admin=0;")
         employee = cursor.fetchall()
+        cursor.callproc("not_give_all;")
+        for result in cursor.stored_results():
+                usernotgiveall = result.fetchall()
+        
+        cursor.callproc("get_usage;")
+        for result in cursor.stored_results():
+            usage = result.fetchall()
+        
+        cursor.execute("select distinct year(RedeemTime) as year, month(RedeemTime) as month from redeem order by year desc, month desc limit 2;")
+        year_month = cursor.fetchall()
+        y1 = [x[0] for x in year_month][0]
+        m1 = [x[1] for x in year_month][0]
+        y2 = [x[0] for x in year_month][1]
+        m2 = [x[1] for x in year_month][1]
+        cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, name, sum(Pointsused), sum(GiftCard) from redeem join employee on employee.eid = redeem.eid where year(RedeemTime) = %s and month(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s  group by year, month, name;",(y1,m1,y2,m2))
+        # cursor.execute("select year(RedeemTime) as year, month(RedeemTime) as month, EID, sum(Pointsused), sum(GiftCard) from redeem where year(RedeemTime) = %s or year(RedeemTime) = %s and month(RedeemTime) = %s or month(RedeemTime) = %s  group by year, month,EID;",(y1,y2,m1,m2))
+        result = cursor.fetchall()
+        
         return render_template("Admin home.html",employee = employee, reset = reset, result = result, usernotgiveall=usernotgiveall,usage=usage)
     else:
         redirect(url_for('admin_login'))
@@ -332,11 +362,6 @@ def admin_home():
 def logout():
     session.clear()
     return redirect(url_for('hello'))
-
-# @app.route('/ad/logout')
-# def adlogout():
-#     session.clear()
-#     return redirect(url_for('admin_home'))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

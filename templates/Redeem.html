@@ -25,16 +25,17 @@
         </div>
 </nav>
 
+<center>
 <p>
 <form method="POST" class="form1">
-<p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
+<p>Number of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
 <button type="submit" name="btn" value="submit">Submit</button></form>
 <br>
 
 
 {% if invalid == 1 %}
 <div class="alert alert-danger">
-        <strong>Warning!</strong> You need to enter at least 10000 points to redeem.
+        <strong>Warning!</strong> Number you give is wrong. You need to enter at least 10000 points to redeem.
 </div>
 {% elif invalid == 2%}
 <div class="alert alert-danger">
@@ -52,6 +53,7 @@
 <p>The number of $100 gift card is: <input type="text" id="numofcards" name = "numofcards"></p>
 </p>
 <br>
+</center>
 
 
 <script>  
