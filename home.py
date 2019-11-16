@@ -2,6 +2,7 @@ from flask import Flask
 from flask import Blueprint, redirect, session, render_template, request, url_for, jsonify,flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
+import math
 app = Flask(__name__)
 app.debug = True
 
@@ -190,27 +191,27 @@ def redeem():
         if request.method == 'POST':
             data = request.form.to_dict(flat=True)
             points = int(data['numofpoints'])
+            cards = math.floor(points/10000)
             date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  
             cursor.execute("select eid from employee where name = %s;",(session['username'],))
             id = cursor.fetchone()
-            # print(id)
             cursor.execute("select AvailableRedeemPoints from points where EID = %s and months = (select max(months) from points);",(id[0],))
             point_current = cursor.fetchone()
-            # print(point_current)
-            if int(point_current[0]) < int(points):
-                return render_template("Redeem.html", invalid = True,point_current=point_current,showname = session['username'])
+            if cards == 0:
+                return render_template("Redeem.html", invalid = 1,point_current=point_current,showname = session['username'])
+            elif int(point_current[0]) < cards*10000:
+                return render_template("Redeem.html", invalid = 2,point_current=point_current,showname = session['username'])
             else:
-                cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], points, points/100))
+                cursor.execute("insert into redeem(RedeemTime, EID, Pointsused, GiftCard) values(%s,%s,%s,%s);",(date, id[0], cards*10000, cards))
                 cursor.execute("select AvailableRedeemPoints from points where EID= %s and months = (select max(months) from points);",(id[0],))
                 Available = cursor.fetchone()[0]
-                cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s and months = (select max(months) from transactions);",(Available-points,id[0],))
-
+                cursor.execute("UPDATE points SET AvailableRedeemPoints = %s where EID = %s and months = (select max(months) from transactions);",(Available-cards*10000,id[0],))
                 cursor.execute("select Rewards from points where EID= %s and months = (select max(months) from points);",(id[0],))
                 reward = cursor.fetchone()[0]
-                cursor.execute("UPDATE points SET Rewards = %s where EID = %s and months = (select max(months) from transactions);",(reward+points/100,id[0],))
+                cursor.execute("UPDATE points SET Rewards = %s where EID = %s and months = (select max(months) from transactions);",(reward+cards,id[0],))
 
                 conn.commit()
-                return render_template("Redeem.html", invalid = False)
+                return render_template("Redeem.html", invalid = 3,cards = cards)
 
         return render_template("Redeem.html")
     else:

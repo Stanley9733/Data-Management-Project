@@ -28,21 +28,28 @@
 <p>
 <form method="POST" class="form1">
 <p>Amount of points you want to redeedm: <input type="text" id="numofpoints" name="numofpoints"></p>
-<button type="submit">Submit</button></form>
+<button type="submit" name="btn" value="submit">Submit</button></form>
 <br>
-{% if invalid %}
+
+
+{% if invalid == 1 %}
+<div class="alert alert-danger">
+        <strong>Warning!</strong> You need to enter at least 10000 points to redeem.
+</div>
+{% elif invalid == 2%}
 <div class="alert alert-danger">
         <strong>Warning!</strong> You don't have enough points to redeem. You only have {{point_current[0]}} points that can be cashed in.
 </div>
-{% elif invalid == False %}
+{% elif invalid ==3 %}
 <div class="alert alert-success">
-    <strong>Success!</strong> You have successfully redeemed.
+    <strong>Success!</strong> You have successfully redeemed {{cards}} cards({{cards*10000}} points).
   </div>
 {% endif %}
+
 <br>
-<button onclick="convert()"">Check # of cards can be redeemed</button>
+<button onclick="convert()" name="btn" value="convert">Check # of cards can be redeemed</button>
 <p></p>
-<p>The number of gift card is: <input type="text" id="numofcards"></p>
+<p>The number of $100 gift card is: <input type="text" id="numofcards" name = "numofcards"></p>
 </p>
 <br>
 
@@ -50,7 +57,8 @@
 <script>  
     function convert() {  
         var points = document.getElementById("numofpoints").value 
-        document.getElementById("numofcards").value = points/100
+        // document.getElementById("numofcards").value = points/100
+        document.getElementById("numofcards").value = Math.floor(points/10000)
     }  
 </script> 
 </body>

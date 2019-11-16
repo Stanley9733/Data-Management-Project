@@ -11,14 +11,14 @@
 
 <body>
   <div class="main">
-    <p class="sign" align="center"><font size="4">Welcome to McCombs MSITM Rewarding system Employee Portal</font></p>
+    <p class="sign" align="center"><font size="6">Welcome to McCombs MSITM Rewarding system Employee Portal</font></p>
     <center><form method="POST" class="form1">
-      <input id="username" name="username" type="text" align="center" placeholder="Username" style="height:30px; width:150px;" required>
-      <input name="password" type="password" align="center" placeholder="Password" style="height:30px; width:150px;" required>
+      <input id="username" name="username" type="text" align="center" placeholder="Username" style="height:35px; width:150px;" required>
+      <input name="password" type="password" align="center" placeholder="Password" style="height:35px; width:150px;" required>
       <p></p>
       <button class="submit" align="center">Sign in</button>
       <p></p>
-      <a class="submit" align="center" href="/ad/"><b><font color="orange">Admin Log in Portal</b></font></a></form>
+      <a class="submit" align="center" href="/ad/"><b><font color="orange" size="5">Admin Log in Portal</b></font></a></form>
       <p></p>
       {% for message in get_flashed_messages() %}
       <br><div class="flash">{{ message }}</div>
