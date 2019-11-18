@@ -320,7 +320,7 @@ def admin_home():
         reset = False
         if request.method == 'POST':
             # cursor.execute("update points set AvaliableGivePoints = 1000;")
-            cursor.execute("select eid from employee;")
+            cursor.execute("select eid from employee admin=0;")
             employee = cursor.fetchall()
             for e in [x[0] for x in employee]:
                 cursor.execute("select * from points where eid=%s order by Months desc",(e,))
