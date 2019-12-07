@@ -217,7 +217,6 @@ def redeem():
                 cursor.execute("select Rewards from points where EID= %s and months = (select max(months) from points);",(id[0],))
                 reward = cursor.fetchone()[0]
                 cursor.execute("UPDATE points SET Rewards = %s where EID = %s and months = (select max(months) from transactions);",(reward+cards,id[0],))
-
                 conn.commit()
                 return render_template("Redeem.html", invalid = 3,cards = cards)
 
@@ -249,14 +248,19 @@ def send():
             message = data['message']
             receiver_name = request.form.get("Employee")
             date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            month = datetime.today().date().replace(day=1)
+            #month = datetime.today().date().replace(day=1)
+            cursor.execute("select max(Months) from points;")
+            month = cursor.fetchone()[0]
             # print(month)  
             cursor.execute("select eid from employee where name = %s;",(session['username'],))
             sender = cursor.fetchone()[0]
+            # print(sender)
             cursor.execute("select eid from employee where name = %s;",(request.form.get("Employee"),))
             receiver = cursor.fetchone()[0]
             cursor.execute("select AvaliableGivePoints, PointsGiven from points where EID = %s and Months = %s;",(sender,month,))
             s = cursor.fetchone()
+            # print(points)
+            # print(s[0])
             if points <= 0:
                 return render_template("Givepoints.html", e = employee,invalid = 1)
             elif s[0] > points:
@@ -320,7 +324,7 @@ def admin_home():
         reset = False
         if request.method == 'POST':
             # cursor.execute("update points set AvaliableGivePoints = 1000;")
-            cursor.execute("select eid from employee admin=0;")
+            cursor.execute("select eid from employee where admin=0;")
             employee = cursor.fetchall()
             for e in [x[0] for x in employee]:
                 cursor.execute("select * from points where eid=%s order by Months desc",(e,))
